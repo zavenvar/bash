@@ -4,6 +4,14 @@
 dir_perm=775
 file_perm=644
 
+# Function to validate permissions
+validate_permissions() {
+    if [[ ! $1 =~ ^[0-7]{3}$ ]]; then
+        echo "Invalid permissions: $1. Permissions should be a three-digit octal number (0-7)."
+        exit 1
+    fi
+}
+
 # Function to change permissions
 change_permissions() {
     find "$1" -type d -exec chmod $dir_perm {} \; # Change directory permissions
@@ -15,8 +23,18 @@ change_permissions() {
 while getopts d:f: option
 do
     case "${option}" in
-        d) dir_perm=${OPTARG};;
-        f) file_perm=${OPTARG};;
+        d) 
+            validate_permissions $OPTARG
+            dir_perm=${OPTARG}
+            ;;
+        f) 
+            validate_permissions $OPTARG
+            file_perm=${OPTARG}
+            ;;
+        \?) 
+            echo "Invalid option: -$OPTARG" >&2
+            exit 1
+            ;;
     esac
 done
 shift $((OPTIND -1))
